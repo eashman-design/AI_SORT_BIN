@@ -1,0 +1,9 @@
+{
+  "dataset_name": "AI_SORT_BIN",
+  "classes": ["plastic", "paper", "metal", "trash"],
+  "version": "v1",
+  "notes": "Initial dataset configuration aligned with planned categories in the research document.",
+  "source": "Eash's laptop dataset",
+  "created_by": "Eash",
+  "created_on": "2025-12-02"
+}

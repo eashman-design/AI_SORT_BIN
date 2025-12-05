@@ -1,0 +1,26 @@
+# Virtual environments
+venv/
+env/
+tf/
+
+# Mac system files
+.DS_Store
+
+# __pycache__ files
+__pycache__/
+*.pyc
+
+# PyCharm files
+.idea/
+
+# WSL/Windows cache (if synced later)
+Thumbs.db
+
+# TensorFlow model artifacts
+*.h5
+*.pb
+saved_model/
+*.tflite
+
+# Roboflow files (if any)
+*.zip

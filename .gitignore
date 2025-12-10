@@ -24,3 +24,16 @@ saved_model/
 
 # Roboflow files (if any)
 *.zip
+
+
+
+# Ignore all dataset contents but keep folder structure
+dataset/**
+!dataset/.gitkeep
+!dataset/processed/.gitkeep
+!dataset/processed/train/.gitkeep
+!dataset/processed/valid/.gitkeep
+!dataset/processed/test/.gitkeep
+!dataset/annotated/.gitkeep
+!dataset/raw/.gitkeep
+

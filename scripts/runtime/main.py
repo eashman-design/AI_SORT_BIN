@@ -1,6 +1,8 @@
 import time
 
 from state_machine import StateMachine
+from scripts.decision.decision_engine import DecisionEngine
+
 
 
 # ---------------- Stub components ---------------- #
@@ -17,15 +19,9 @@ class InferenceEngineStub:
         ]
 
 
-class DecisionEngineStub:
-    def decide(self, predictions):
-        """
-        Stub decision logic.
-        Replace with bin policy + confidence logic later.
-        """
-        print("[DECISION] Stub decision")
-        # Always return bin 0 for now
-        return 0
+decision_engine = DecisionEngine(
+    policy_path="decision/bin_policy.yaml"
+)
 
 
 class ActuatorStub:
@@ -43,7 +39,7 @@ def main():
     print("[SYSTEM] Starting AI Sort Bin runtime")
 
     inference_engine = InferenceEngineStub()
-    decision_engine = DecisionEngineStub()
+    decision_engine = DecisionEngine()
     actuator = ActuatorStub()
 
     state_machine = StateMachine(

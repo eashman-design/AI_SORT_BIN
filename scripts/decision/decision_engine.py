@@ -1,15 +1,33 @@
 import yaml
+from pathlib import Path 
 
+DEFAULT_BINS = {
+    "paper": 0,
+    "plastic": 1,
+    "glass": 2,
+    "metal": 3,
+    "trash": 4
+}
 
 class DecisionEngine:
-    def __init__(self, policy_path):
-        with open(policy_path, "r") as f:
-            self.policy = yaml.safe_load(f)
+    def __init__(self, policy_path: str):
+        base_dir = Path(__file__).resolve().parent
+        policy_file = base_dir / policy_path
 
-        self.bins = self.policy["bins"]
-        self.thresholds = self.policy["confidence_thresholds"]
-        self.fallback_bin = self.policy["fallback_bin"]
-        self.max_detections = self.policy.get("max_detections", 1)
+        if not policy_file.exists():
+            raise FileNotFoundError(
+                f"Policy file not found: {policy_file}"
+            )
+
+        with open(policy_file, "r") as f:
+            self.policy = yaml.safe_load(f) or {}
+
+         # --- REQUIRED FIELDS / DEFAULTS ---
+        self.thresholds = self.policy.get("thresholds", {})
+        self.default_threshold = float(self.policy.get("default_threshold", 0.5))
+        self.fallback_bin = self.policy.get("fallback_bin", "trash")
+        self.bins = self.policy.get("bins", DEFAULT_BINS)
+        
 
     def decide(self, predictions):
         """
@@ -35,7 +53,9 @@ class DecisionEngine:
         cls = top["class"]
         conf = top["confidence"]
 
-        threshold = self.thresholds.get(cls)
+        threshold = float(
+            self.thresholds.get(cls, self.default_threshold)
+        )
 
         if threshold is None:
             # Unknown class → trash

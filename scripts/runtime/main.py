@@ -19,11 +19,6 @@ class InferenceEngineStub:
         ]
 
 
-decision_engine = DecisionEngine(
-    policy_path="decision/bin_policy.yaml"
-)
-
-
 class ActuatorStub:
     def actuate(self, bin_id):
         """
@@ -39,7 +34,7 @@ def main():
     print("[SYSTEM] Starting AI Sort Bin runtime")
 
     inference_engine = InferenceEngineStub()
-    decision_engine = DecisionEngine()
+    decision_engine = DecisionEngine(policy_path="bin_policy.yaml")
     actuator = ActuatorStub()
 
     state_machine = StateMachine(

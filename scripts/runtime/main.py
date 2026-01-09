@@ -1,6 +1,6 @@
 import time
 
-from state_machine import StateMachine
+from .state_machine import StateMachine
 from scripts.decision.decision_engine import DecisionEngine
 
 

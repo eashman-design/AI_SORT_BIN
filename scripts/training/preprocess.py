@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from PIL import Image
 
 # =====================
@@ -7,13 +8,14 @@ from PIL import Image
 TEST_MODE = True  # ← change to False when you're ready for real processing
 TARGET_SIZE = (224, 224)
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-RAW_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "dataset", "raw"))
+# Resolve repo root from scripts/training/*.py → parents[2] is repo root
+REPO_ROOT = Path(__file__).resolve().parents[2]
+RAW_DIR = REPO_ROOT / "dataset" / "raw"
 
 if TEST_MODE:
-    OUT_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "dataset", "processed_test"))
+    OUT_DIR = REPO_ROOT / "dataset" / "processed_test"
 else:
-    OUT_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "dataset", "processed"))
+    OUT_DIR = REPO_ROOT / "dataset" / "processed"
 
 # =====================
 # FUNCTIONS

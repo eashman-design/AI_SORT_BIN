@@ -1,9 +1,10 @@
 import os
+from pathlib import Path
 from PIL import Image
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-DATASET_PATH = os.path.join(PROJECT_ROOT, "..", "dataset", "raw")
-DATASET_PATH = os.path.abspath(DATASET_PATH)
+# Resolve repo root from scripts/training/*.py → parents[2] is repo root
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATASET_PATH = REPO_ROOT / "dataset" / "raw"
 
 VALID_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 

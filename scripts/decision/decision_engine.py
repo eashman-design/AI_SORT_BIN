@@ -22,8 +22,9 @@ class DecisionEngine:
         with open(policy_file, "r") as f:
             self.policy = yaml.safe_load(f) or {}
 
-         # --- REQUIRED FIELDS / DEFAULTS ---
-        self.thresholds = self.policy.get("thresholds", {})
+        # --- REQUIRED FIELDS / DEFAULTS ---
+        # Support both YAML keys: "confidence_thresholds" (preferred) or "thresholds" (legacy)
+        self.thresholds = self.policy.get("confidence_thresholds") or self.policy.get("thresholds", {})
         self.default_threshold = float(self.policy.get("default_threshold", 0.5))
         self.fallback_bin = self.policy.get("fallback_bin", "trash")
         self.bins = self.policy.get("bins", DEFAULT_BINS)

@@ -1,4 +1,14 @@
+"""
+AI Sort Bin – Dataset Integrity Checker
+
+Execution:
+    python scripts/training/dataset_check.py
+
+Must be run from the repository root directory.
+Validates dataset structure and image readability.
+"""
 import os
+import sys
 from pathlib import Path
 from PIL import Image
 
@@ -11,9 +21,11 @@ VALID_EXTENSIONS = [".jpg", ".jpeg", ".png"]
 def check_dataset_structure():
     print("=== Dataset Structure Check ===")
 
-    if not os.path.exists(DATASET_PATH):
-        print(f"❌ ERROR: Dataset path not found: {DATASET_PATH}")
-        return
+    if not DATASET_PATH.is_dir():
+        sys.exit(
+            f"[ERROR] Dataset path not found: {DATASET_PATH}\n"
+            "Ensure the dataset/raw/ directory exists with class subdirectories."
+        )
 
     classes = sorted(os.listdir(DATASET_PATH))
     print(f"Found classes: {classes}")

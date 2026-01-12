@@ -1,4 +1,14 @@
+"""
+AI Sort Bin – Image Preprocessing
+
+Execution:
+    python scripts/training/preprocess.py
+
+Must be run from the repository root directory.
+Resizes raw images to 224x224 for model training.
+"""
 import os
+import sys
 from pathlib import Path
 from PIL import Image
 
@@ -34,6 +44,12 @@ def preprocess_image(img_path, out_path):
         print(f"❌ Error processing {img_path}: {e}")
 
 def preprocess_dataset():
+    if not RAW_DIR.is_dir():
+        sys.exit(
+            f"[ERROR] Raw dataset directory not found: {RAW_DIR}\n"
+            "Ensure the dataset/raw/ directory exists with class subdirectories."
+        )
+
     ensure_dir(OUT_DIR)
 
     classes = os.listdir(RAW_DIR)

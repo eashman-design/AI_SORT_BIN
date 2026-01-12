@@ -1,7 +1,37 @@
+"""
+AI Sort Bin – Runtime Entry Point
+
+Execution:
+    python -m scripts.runtime.main
+
+Must be run from the repository root directory.
+"""
+import sys
 import time
 
 from .state_machine import StateMachine
 from scripts.decision.decision_engine import DecisionEngine
+
+
+def _validate_environment():
+    """Validate that the runtime environment is correctly configured."""
+    from pathlib import Path
+
+    # Determine repo root from this file's location
+    repo_root = Path(__file__).resolve().parents[2]
+
+    # Verify essential directories exist
+    required_dirs = [
+        repo_root / "scripts" / "decision",
+        repo_root / "scripts" / "runtime",
+    ]
+    for d in required_dirs:
+        if not d.is_dir():
+            sys.exit(
+                f"[ERROR] Required directory not found: {d}\n"
+                "Ensure you are running from the repository root:\n"
+                "    python -m scripts.runtime.main"
+            )
 
 
 
@@ -31,6 +61,7 @@ class ActuatorStub:
 # ---------------- Main runtime ---------------- #
 
 def main():
+    _validate_environment()
     print("[SYSTEM] Starting AI Sort Bin runtime")
 
     inference_engine = InferenceEngineStub()

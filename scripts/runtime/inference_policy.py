@@ -5,21 +5,29 @@ Implements detection filtering, active object selection, and bin routing
 for the AI_SORT_BIN waste classification system.
 
 Model: SSD MobileNet V2 (TensorFlow Object Detection API)
+
+NOTE: This module uses centralized config from dataset/dataset_config.json.
 """
 
 import logging
 from datetime import datetime
 from typing import Any
 
+from scripts.common.config import (
+    get_fallback_bin,
+    get_unknown_threshold,
+    get_confidence_thresholds,
+)
+
 # Configure module logger
 logger = logging.getLogger(__name__)
 
-# Contract-mandated thresholds
-CONF_MIN = 0.60
-CONF_ROUTE = 0.75
+# Contract-mandated thresholds (loaded from config)
+CONF_MIN = get_unknown_threshold()
+CONF_ROUTE = get_confidence_thresholds().get("default", 0.75)
 
-# Fallback bin for all uncertain/error cases
-TRASH_BIN = "trash"
+# Fallback bin for all uncertain/error cases (from config)
+FALLBACK_BIN = get_fallback_bin()
 
 
 def _compute_bbox_area(detection: dict) -> float:
@@ -105,9 +113,9 @@ def route_detection(
     Route a detection to the appropriate bin.
 
     Contract Rules 3 & 4:
-    - If detection confidence < CONF_ROUTE → route to TRASH
+    - If detection confidence < CONF_ROUTE → route to fallback
     - Use class_to_bin lookup table
-    - If class is unknown or unmapped → route to TRASH
+    - If class is unknown or unmapped → route to fallback
 
     Args:
         detection: Selected detection dict, or None
@@ -117,25 +125,25 @@ def route_detection(
     Returns:
         Tuple of (bin_id, fallback_reason)
         - fallback_reason is None if normal routing
-        - fallback_reason is a string explaining why TRASH was selected
+        - fallback_reason is a string explaining why fallback was selected
     """
     # No detection provided
     if detection is None:
-        return TRASH_BIN, "no_detection_provided"
+        return FALLBACK_BIN, "no_detection_provided"
 
     confidence = detection.get("confidence", 0.0)
     class_id = detection.get("class_id")
 
     # Contract Rule 3: Confidence gate
     if confidence < conf_route:
-        return TRASH_BIN, f"confidence_below_route_threshold ({confidence:.3f} < {conf_route})"
+        return FALLBACK_BIN, f"confidence_below_route_threshold ({confidence:.3f} < {conf_route})"
 
     # Contract Rule 4: Class-to-bin mapping
     if class_id is None:
-        return TRASH_BIN, "missing_class_id"
+        return FALLBACK_BIN, "missing_class_id"
 
     if class_id not in class_to_bin:
-        return TRASH_BIN, f"unmapped_class ({class_id})"
+        return FALLBACK_BIN, f"unmapped_class ({class_id})"
 
     # Successful routing
     return class_to_bin[class_id], None
@@ -154,9 +162,9 @@ def decide_bin(
     1. Filter detections by CONF_MIN
     2. Select active detection (largest bbox, tie-break by confidence)
     3. Route to bin via CONF_ROUTE gate and class mapping
-    4. Handle all fallbacks to TRASH
+    4. Handle all fallbacks to fallback bin (from config)
 
-    Contract Rule 5: Any runtime error → route to TRASH
+    Contract Rule 5: Any runtime error → route to fallback
 
     Args:
         detections: Raw list of detection dicts from model
@@ -171,7 +179,7 @@ def decide_bin(
         - filtered_detections: Detections after confidence filtering
         - selected_detection: The chosen active detection (or None)
         - bin_decision: Final bin identifier
-        - fallback_reason: Reason for TRASH routing (or None)
+        - fallback_reason: Reason for fallback routing (or None)
     """
     timestamp = datetime.now().isoformat()
 
@@ -181,7 +189,7 @@ def decide_bin(
         "all_detections": detections,
         "filtered_detections": [],
         "selected_detection": None,
-        "bin_decision": TRASH_BIN,
+        "bin_decision": FALLBACK_BIN,
         "fallback_reason": None
     }
 
@@ -198,7 +206,7 @@ def decide_bin(
         filtered = filter_detections(detections, conf_min)
         result["filtered_detections"] = filtered
 
-        # Contract Rule 1: No detections remain → TRASH
+        # Contract Rule 1: No detections remain → fallback
         if not filtered:
             result["fallback_reason"] = "no_detections_above_conf_min"
             _log_decision(result)
@@ -217,8 +225,8 @@ def decide_bin(
         result["fallback_reason"] = fallback_reason
 
     except Exception as e:
-        # Contract Rule 5: Any runtime error → TRASH
-        result["bin_decision"] = TRASH_BIN
+        # Contract Rule 5: Any runtime error → fallback
+        result["bin_decision"] = FALLBACK_BIN
         result["fallback_reason"] = f"runtime_error ({type(e).__name__}: {e})"
         logger.exception("Runtime error in decide_bin")
 
@@ -235,7 +243,7 @@ def _log_decision(result: dict) -> None:
     - all detections
     - selected detection
     - final bin decision
-    - reason for trash fallback (if applicable)
+    - reason for fallback (if applicable)
     """
     log_message = (
         f"[INFERENCE] "

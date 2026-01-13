@@ -1,0 +1,30 @@
+# =============================================================================
+# DEPRECATED - DO NOT USE
+# =============================================================================
+# This file has been replaced by dataset/dataset_config.json
+# All taxonomy, routing, and threshold configuration is now centralized there.
+#
+# Migration date: 2026-01-12
+# Reason: Single source of truth for class labels and bin routing
+# =============================================================================
+
+# Physical bin IDs (match your hardware layout)
+bins:
+  trash: 0
+  containers: 1
+  paper: 2
+  glass: 3
+
+# Confidence thresholds per class
+# Higher threshold = more conservative
+confidence_thresholds:
+  trash: 0.40
+  containers: 0.75
+  paper: 0.80
+  glass: 0.85
+
+# If anything is uncertain, default here
+fallback_bin: trash
+
+# For v1, only act on the top detection
+max_detections: 1

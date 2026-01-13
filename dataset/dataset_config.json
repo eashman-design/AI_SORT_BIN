@@ -1,9 +1,46 @@
 {
   "dataset_name": "AI_SORT_BIN",
-  "classes": ["plastic", "paper", "metal", "trash"],
-  "version": "v1",
-  "notes": "Initial dataset configuration aligned with planned categories in the research document.",
+  "version": "v2",
+  "notes": "5-class taxonomy for V1 hardware (3 physical bins + landfill fallback)",
+
+  "labels": [
+    "metal_container",
+    "plastic_container",
+    "glass",
+    "paper",
+    "cardboard"
+  ],
+
+  "physical_bins": {
+    "containers_bin": 0,
+    "paper_bin": 1,
+    "glass_bin": 2,
+    "landfill_bin": 3
+  },
+
+  "routing_map": {
+    "metal_container": "containers_bin",
+    "plastic_container": "containers_bin",
+    "glass": "glass_bin",
+    "paper": "paper_bin",
+    "cardboard": "paper_bin"
+  },
+
+  "fallback_bin": "landfill_bin",
+
+  "confidence_thresholds": {
+    "default": 0.70,
+    "metal_container": 0.75,
+    "plastic_container": 0.75,
+    "glass": 0.80,
+    "paper": 0.70,
+    "cardboard": 0.70
+  },
+
+  "unknown_threshold": 0.60,
+
   "source": "Eash's laptop dataset",
   "created_by": "Eash",
-  "created_on": "2025-12-02"
+  "created_on": "2025-12-02",
+  "updated_on": "2026-01-12"
 }

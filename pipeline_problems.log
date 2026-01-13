@@ -1,0 +1,76 @@
+# Pipeline Problems Log
+# AI_SORT_BIN - Taxonomy Refactor (2026-01-12)
+
+## Critical Issues Identified
+
+### Issue 1: DecisionEngine KeyError on unmapped classes
+- **Location**: scripts/decision/decision_engine.py:68
+- **Problem**: `self.bins[cls]` throws KeyError when model predicts a class not in bin_policy.yaml
+- **Root cause**: Dead code at line 61 (`if threshold is None`) never executes because `.get()` returns default
+- **Status**: FIXED
+
+### Issue 2: Dataset/Policy class mismatch
+- **Location**: dataset/dataset_config.json vs scripts/decision/bin_policy.yaml
+- **Problem**: Dataset defined: plastic, paper, metal, trash. Policy defined: trash, containers, paper, glass
+- **Root cause**: Two separate config files with no synchronization
+- **Status**: FIXED
+
+### Issue 3: Missing dataset folders
+- **Location**: dataset/raw/
+- **Problem**: Only `trash/` folder existed, missing other class folders
+- **Root cause**: Dataset structure not validated against config
+- **Status**: FIXED (validation added, folders must be created manually)
+
+---
+
+## Fixes Applied (taxonomy-refactor-5class branch)
+
+### A) Single Source of Truth
+- Updated `dataset/dataset_config.json` with new 5-class taxonomy
+- Added: labels, routing_map, physical_bins, confidence_thresholds, unknown_threshold, fallback_bin
+- New labels: metal_container, plastic_container, glass, paper, cardboard
+
+### B) Centralized Config Loader
+- Created `scripts/common/config.py`
+- Exposes: get_labels(), get_routing_map(), get_physical_bins(), safe_label_to_bin_id(), etc.
+- All modules now import from here instead of hardcoding
+
+### C) DecisionEngine Rewrite
+- Removed YAML dependency and hardcoded DEFAULT_BINS
+- Uses centralized config via config.py
+- `safe_label_to_bin_id()` never throws KeyError - returns fallback with reason
+- Added `decide_with_reason()` for debugging
+
+### D) Training Scripts Updated
+- `dataset_check.py`: Validates folders against config labels, clear error messages
+- `preprocess.py`: Processes only config-defined labels, warns on mismatches
+
+### E) bin_policy.yaml Deprecated
+- Renamed to `bin_policy.yaml.deprecated`
+- Added deprecation header
+- All config now in dataset_config.json
+
+### F) Documentation Updated
+- ENVIRONMENT.md: Added taxonomy section with labels, bins, routing, unknown handling
+- CLAUDE.md: Updated architecture, configuration, dataset structure sections
+
+---
+
+## Remaining TODOs
+
+1. **Create dataset folders**: Run `dataset_check.py` to see exact mkdir commands
+2. **Populate dataset**: Add images to each class folder
+3. **CVAT export**: Re-export annotations with new label names
+4. **Retrain model**: After dataset is ready
+
+---
+
+## Future Taxonomy Changes
+
+To add/change/split classes:
+1. Edit `dataset/dataset_config.json` (labels, routing_map, thresholds)
+2. Create/rename dataset folders to match
+3. Re-export CVAT annotations with new labels
+4. Retrain model
+
+NO code changes required.

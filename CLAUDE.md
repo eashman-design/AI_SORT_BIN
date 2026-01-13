@@ -32,16 +32,21 @@ IDLE → DETECT → DECIDE → ACTUATE → RESET → (loop)
 ```
 
 - **StateMachine** (`scripts/runtime/state_machine.py`): Orchestrates the detection→decision→actuation cycle
-- **DecisionEngine** (`scripts/decision/decision_engine.py`): Policy-based bin selection using confidence thresholds from `bin_policy.yaml`
+- **DecisionEngine** (`scripts/decision/decision_engine.py`): Policy-based bin selection using centralized config
+- **ConfigLoader** (`scripts/common/config.py`): Centralized taxonomy and routing configuration
 - **InferenceEngine**: Currently a stub; will run the ML model
 - **Actuator**: Currently a stub; will control GPIO/servo hardware
 
-### Configuration
+### Configuration (Single Source of Truth)
 
-`scripts/decision/bin_policy.yaml` defines:
-- Bin ID mappings for each waste class (trash, containers, paper, glass)
-- Per-class confidence thresholds
-- Fallback bin for uncertain classifications
+`dataset/dataset_config.json` defines ALL taxonomy and routing:
+- `labels`: Model output classes (metal_container, plastic_container, glass, paper, cardboard)
+- `routing_map`: Label → physical bin mapping
+- `physical_bins`: Bin name → hardware ID
+- `confidence_thresholds`: Per-class and default thresholds
+- `fallback_bin`: Destination for unknown/low-confidence predictions
+
+**To change taxonomy**: Edit ONLY `dataset/dataset_config.json`, re-export CVAT annotations, retrain. No code changes required.
 
 ### Training Pipeline
 
@@ -54,12 +59,15 @@ Training utilities exist in `scripts/training/` but no model training script yet
 
 ```
 dataset/
-├── raw/<class>/           # Original images
+├── dataset_config.json    # Single source of truth for taxonomy
+├── raw/<class>/           # Original images (flat folders per class)
 ├── processed/<class>/     # Production preprocessed (train/valid/test splits)
 └── processed_test/<class>/ # Development/test images
 ```
 
-Classes: plastic, paper, metal, trash (defined in `dataset/dataset_config.json`)
+Classes (V1): metal_container, plastic_container, glass, paper, cardboard
+
+Dataset folders MUST match labels in `dataset_config.json`. Run `dataset_check.py` to validate.
 
 ## Environment Constraints
 

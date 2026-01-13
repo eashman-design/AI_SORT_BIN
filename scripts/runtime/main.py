@@ -44,8 +44,9 @@ class InferenceEngineStub:
         Replace with real model inference later.
         """
         print("[INFERENCE] Stub prediction")
+        # Use a label from the canonical taxonomy
         return [
-            {"class": "trash", "confidence": 0.95}
+            {"class": "plastic_container", "confidence": 0.85}
         ]
 
 
@@ -65,7 +66,7 @@ def main():
     print("[SYSTEM] Starting AI Sort Bin runtime")
 
     inference_engine = InferenceEngineStub()
-    decision_engine = DecisionEngine(policy_path="bin_policy.yaml")
+    decision_engine = DecisionEngine()  # Uses centralized config
     actuator = ActuatorStub()
 
     state_machine = StateMachine(
